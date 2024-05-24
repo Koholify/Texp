@@ -44,7 +44,7 @@ class DirWindow(NCWindow):
         else:
             self.files = os.listdir(self.dir)
 
-        if pos == "":
+        if pos == "" or self.dir == None:
             self.set_cursor(-1, 0)
         else:
             self.set_cursor(self.files.index(pos), 0)
@@ -69,8 +69,6 @@ class DirWindow(NCWindow):
 
     def get_line_color(self, stat: os.stat_result, highlight: bool = False) -> int:
         return self.base_color
-
-
 
 class DirWindowInput(NCWindowInput):
     def __init__(self, window: DirWindow) -> None:

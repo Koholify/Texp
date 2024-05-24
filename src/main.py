@@ -1,3 +1,5 @@
+#! /bin/env python3
+
 import curses as nc
 import os
 from commandwindow import CommandWindow
