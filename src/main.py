@@ -1,7 +1,9 @@
 #! /bin/env python3
 
 import curses as nc
+import pipes
 import os
+import sys
 from commandwindow import CommandWindow
 from dirwindow import DirWindow
 from ncwindow import NCWindow
@@ -89,10 +91,8 @@ def main(scr):
     nc.curs_set(1)
 if __name__ == "__main__":
     nc.wrapper(main)
-
-    try:
-        with open("tmp.log", "r") as logfile:
-            for l in logfile.readlines():
-                print(l, end="")
-    except:
-        pass
+    if App.target is not None:
+        print(f'export RESULT="{pipes.quote(App.target)}"')
+    else:
+        print(f"export RESULT=.")
+    sys.exit(0)

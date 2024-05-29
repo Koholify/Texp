@@ -76,7 +76,11 @@ class CommandWindowInput(NCWindowInput):
             "UPARROW",
             "k",
             "DOWNARROW",
-            "j"
+            "j",
+            "c",
+            "x",
+            "y",
+            "s"
         }
 
     def clamp_windows(self):

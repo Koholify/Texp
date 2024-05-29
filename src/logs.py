@@ -1,2 +1,6 @@
 import logging as log
-log.basicConfig(filename="tmp.log", filemode="w", level=log.DEBUG)
+import os
+file = "/tmp/texp/tmp.log"
+if not os.path.exists(os.path.split(file)[0]):
+    os.makedirs(os.path.split(file)[0], exist_ok=True,)
+log.basicConfig(filename=file, filemode="w", level=log.DEBUG)

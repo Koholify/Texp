@@ -220,7 +220,6 @@ class DirWindowInput(NCWindowInput):
 
     def default_handler(self, c: str, mods: int):
         log.debug(f"inp: {self.window.dir}")
-        log.debug(self.window.is_dir)
         if not self.window.is_dir:
             return
 
@@ -232,6 +231,8 @@ class DirWindowInput(NCWindowInput):
             self.window.cursor_pos[0] += 1
             self.clamp_index()
             self.window.update_next_window_preview()
+        elif c == "c":
+            App.target = self.window.dir
 
     def clamp_index(self):
         self.window.cursor_pos[0] = min(len(self.window.files)-1, self.window.cursor_pos[0])
