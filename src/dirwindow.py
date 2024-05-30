@@ -231,8 +231,12 @@ class DirWindowInput(NCWindowInput):
             self.window.cursor_pos[0] += 1
             self.clamp_index()
             self.window.update_next_window_preview()
+        elif c == "e":
+            App.target = self.window.dir
+            App.running = False
         elif c == "c":
             App.target = self.window.dir
+            os.chdir(self.window.dir)
 
     def clamp_index(self):
         self.window.cursor_pos[0] = min(len(self.window.files)-1, self.window.cursor_pos[0])

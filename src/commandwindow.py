@@ -77,6 +77,7 @@ class CommandWindowInput(NCWindowInput):
             "k",
             "DOWNARROW",
             "j",
+            "e",
             "c",
             "x",
             "y",

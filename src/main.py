@@ -91,8 +91,12 @@ def main(scr):
     nc.curs_set(1)
 if __name__ == "__main__":
     nc.wrapper(main)
+    tfile = "/tmp/texptargetresult"
     if App.target is not None:
-        print(f'export RESULT="{pipes.quote(App.target)}"')
+        with open(tfile, mode="w") as ff:
+            ff.write(App.target)
+            ff.flush()
     else:
-        print(f"export RESULT=.")
+        if os.path.isfile(tfile):
+            os.remove(tfile)
     sys.exit(0)
