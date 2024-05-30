@@ -14,15 +14,17 @@ import logging as log
 import logs as _
 
 def split_screen(n: int):
+    log.debug(f"{nc.COLS} : {nc.LINES}")
     cols_per_screen = nc.COLS // n
     rows_per_screen = nc.LINES - 2
+    App.windows = []
     bar = CommandWindow()
     App.command = bar
 
     for i in range(n):
         end = nc.COLS % cols_per_screen
         if i < n - 2: end = 0
-        w = DirWindow((rows_per_screen, cols_per_screen + end), (0, i + (cols_per_screen * i)), i)
+        w = DirWindow((rows_per_screen, cols_per_screen + end), (0, cols_per_screen * i), i)
         App.windows.append(w)
 
 def is_ctrl(c: int) -> bool:
@@ -58,6 +60,26 @@ def input_handler(win: NCWindow):
     elif is_ctrl(ch):
         c = ch - 1 + ord('a')
         win.handle_input(chr(c), NCWindowInput.MOD_CTRL)
+    elif ch == nc.KEY_RESIZE:
+        log.debug("need resize")
+        dirs = []
+        nc.resize_term(*App.stdscreen.getmaxyx())
+        cw = App.command.current_window
+        for w in App.windows:
+            dirs.append((w.dir, w.get_current_item()))
+
+        split_screen(3)
+        log.debug(dirs)
+        log.debug(cw)
+        App.windows[0].set_dir(dirs[0][0], dirs[0][1])
+        App.windows[1].set_dir(dirs[1][0], dirs[1][1])
+        App.windows[2].set_dir(dirs[2][0], dirs[2][1])
+        App.command.current_window = cw
+
+        App.stdscreen.refresh()
+        for w in App.windows:
+            w.update()
+        App.command.update()
     else:
         hold_shift = ch >= ord('A') and ch <= ord('Z')
         mods = NCWindowInput.MOD_NONE

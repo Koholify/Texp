@@ -73,15 +73,12 @@ class CommandWindowInput(NCWindowInput):
         super().__init__(window)
         self.window = window
         self.through_put_keymap = {
-            "UPARROW",
-            "k",
-            "DOWNARROW",
-            "j",
-            "e",
-            "c",
-            "x",
-            "y",
-            "s"
+            "UPARROW", "k", "DOWNARROW", "j",
+            "e", "c",
+            "x", "y", "p",
+            "r", "a", "d",
+            "z",
+            "/",
         }
 
     def clamp_windows(self):
