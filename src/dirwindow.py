@@ -68,6 +68,9 @@ class DirWindow(NCWindow):
         if self.cursor_pos[0] < 0 or len(self.files) == 0: return ""
         return self.files[self.cursor_pos[0]]
 
+    def refresh_files(self):
+        self.set_dir(self.dir, self.get_current_item())
+
     def set_dir(self, path: str, pos: str = ""):
         self.dir = path
         self.is_dir = False
@@ -93,6 +96,7 @@ class DirWindow(NCWindow):
         else:
             self.set_cursor(self.files.index(pos), 0)
         self.update()
+        self.update_next_window_preview()
 
     def set_file_preview(self, path: str):
         self.dir = path

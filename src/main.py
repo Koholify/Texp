@@ -1,7 +1,6 @@
 #! /bin/env python3
 
 import curses as nc
-import pipes
 import os
 import sys
 from commandwindow import CommandWindow
@@ -89,6 +88,8 @@ def input_handler(win: NCWindow):
 
 def main(scr):
     App.stdscreen = scr
+    App.selections = {"",}
+    App.selections.clear()
     nc.curs_set(0)
     scr.refresh()
     setup_window_colors()

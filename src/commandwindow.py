@@ -1,9 +1,11 @@
 import curses as nc
+import shutil
 import os
 import stat
 from app import App
 from colors import WC_DEFAULT_2
 from ncwindow import NCWindow
+from dirwindow import DirWindow
 from ncwindowinput import NCWindowInput
 
 import logging as log
@@ -31,6 +33,12 @@ class CommandWindow(NCWindow):
         except nc.error:
             pass
         super().update()
+
+    def write(self, msg: str, line: int = 0):
+        try:
+            self.window.addstr(line, 0, msg, self.get_base_color())
+        except:
+            pass
 
     def move_dirs_up(self):
         cd_old = App.windows[1].dir
@@ -74,12 +82,23 @@ class CommandWindowInput(NCWindowInput):
         self.window = window
         self.through_put_keymap = {
             "UPARROW", "k", "DOWNARROW", "j",
-            "e", "c",
-            "x", "y", "p",
-            "r", "a", "d",
-            "z",
-            "/",
+            "e", # enter dir and exit
+            "c", # chdir to current window
         }
+
+        self.command_keymap = {
+            "x": self._handle_cmd_cut, # cut
+            "y": self._handle_cmd_copy, # yank
+            "p": self._handle_cmd_paste, # paste
+            "r": self._handle_cmd_rename, # rename
+            "a": self._handle_cmd_add, # add file
+            "d": self._handle_cmd_delete, # delete
+            "z": self._handle_cmd_add_dir,# create dir
+            "/": self._handle_cmd_none, # escape current command
+        }
+
+    def get_current_window(self) -> DirWindow:
+        return App.windows[self.window.current_window]
 
     def clamp_windows(self):
         self.window.current_window = min(len(App.windows)-2, self.window.current_window)
@@ -101,7 +120,7 @@ class CommandWindowInput(NCWindowInput):
                 if self.window.current_window == 1:
                     self.window.move_dirs_down()
                 elif self.window.current_window == 0:
-                    cw = App.windows[self.window.current_window]
+                    cw = self.get_current_window()
                     pp = os.path.join(cw.dir, cw.get_current_item())
                     st = os.stat(pp)
                     if stat.S_ISDIR(st.st_mode):
@@ -116,5 +135,71 @@ class CommandWindowInput(NCWindowInput):
 
         elif mods == NCWindowInput.MOD_NONE:
             if c in self.through_put_keymap:
-                App.windows[self.window.current_window].handle_input(c, mods)
+                self.get_current_window().handle_input(c, mods)
                 self.update_all_windows()
+            elif c in self.command_keymap:
+                if c == "/" or self.get_current_window().get_current_item != "":
+                    self.command_keymap[c]()
+
+    def _handle_cmd_none(self):
+        App.cmd = App.CMD_NONE
+        App.selections.clear()
+    def _handle_cmd_cut(self):
+        if not App.cmd == App.CMD_CUT:
+            App.selections.clear()
+        App.cmd = App.CMD_CUT
+        cw = self.get_current_window()
+        App.selections.add(os.path.join(cw.dir, cw.get_current_item()))
+    def _handle_cmd_copy(self):
+        if not App.cmd == App.CMD_COPY:
+            App.selections.clear()
+        App.cmd = App.CMD_COPY
+        cw = self.get_current_window()
+        App.selections.add(os.path.join(cw.dir, cw.get_current_item()))
+    def _handle_cmd_paste(self):
+        log.debug(App.selections)
+        if len(App.selections) > 0:
+            cw = App.windows[self.window.current_window]
+            for f in App.selections:
+                if App.cmd == App.CMD_CUT:
+                    shutil.move(f, cw.dir)
+                elif App.cmd == App.CMD_COPY:
+                    shutil.copy2(f, cw.dir)
+        App.cmd = App.CMD_NONE
+        App.selections.clear()
+    def _handle_cmd_rename(self):
+        pass
+    def _handle_cmd_delete(self):
+        if len(App.selections) < 1:
+            cw = self.get_current_window()
+            file = os.path.join(cw.dir, cw.get_current_item())
+            ch = self._prompt_single(f"Delete {file}?\ny/n")
+            log.debug(f"del promt result: {ch}")
+            if ch == "y":
+                os.remove(os.path.join(cw.dir, cw.get_current_item()))
+                cw.cursor_pos[0] -= 1
+                cw.refresh_files()
+                cw.update()
+        App.cmd = App.CMD_NONE
+        App.selections.clear()
+    def _handle_cmd_add(self):
+        pass
+    def _handle_cmd_add_dir(self):
+        pass
+    def _prompt_single(self, msg: str) -> str:
+        self.window.clear()
+        ms = msg.split("\n")
+        for i in range(len(ms)):
+            self.window.write(ms[i], i)
+        self.window.window.refresh()
+        ch = App.stdscreen.getch()
+        return chr(ch)
+
+    def _prompt_str(self, msg: str) -> str:
+        self.window.clear()
+        ms = msg.split("\n")
+        for i in range(len(ms)):
+            self.window.write(ms[i], i)
+        self.window.window.refresh()
+        ch = App.stdscreen.getch()
+        return chr(ch)
